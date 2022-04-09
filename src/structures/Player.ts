@@ -127,6 +127,17 @@ export class Player {
     this.manager.players.set(options.guild, this);
     this.manager.emit("playerCreate", this);
     this.setVolume(options.volume ?? 100);
+    if(this.manager.options.resumeOnDc && this.manager.nodes.filter(x => x.connected).size > 1) {
+      try {
+        this.manager.on('nodeDisconnect', async (node) => {
+          for(const players of [...this.manager.players.filter(x => x.node === node).values()]) {
+           await players.setNode(this.manager.leastUsedNodes.first().options.identifier)
+          }
+        })
+      } catch (error) {
+        this.manager.emit('resumeError', this, error)
+      }
+    }
   }
 
   /**
@@ -139,6 +150,27 @@ export class Player {
     requester?: unknown
   ): Promise<SearchResult> {
     return this.manager.search(query, requester);
+  }
+
+  /**
+   * Move the player to another connected node
+   * @param name
+   */
+   async setNode(name: string) {
+    if (this.node.options.identifier === name) return this; 
+    const node = this.manager.nodes.get(name) 
+    if(!node) throw Error('Please specify valid node name.');
+    if(!node.connected) throw Error('The node is not connected');
+    const options = {
+      op: "play",
+      guildId: this.guild,
+      track: this.queue.current.track,
+      startTime: this.position,
+    };
+    this.node = node;
+    await this.node.send(this.voiceState)
+    await this.node.send(options)
+    return this;
   }
 
   /**

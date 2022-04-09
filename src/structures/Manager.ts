@@ -58,6 +58,12 @@ function check(options: ManagerOptions) {
     throw new TypeError('Manager option "autoPlay" must be a boolean.');
 
   if (
+    typeof options.resumeOnDc !== "undefined" &&
+    typeof options.resumeOnDc !== "boolean"
+  ) 
+    throw new TypeError('Manager option "replayOnDc" must be a boolean.');
+    
+  if (
     typeof options.trackPartial !== "undefined" &&
     !Array.isArray(options.trackPartial)
   )
@@ -133,6 +139,12 @@ export interface Manager {
    * @event Manager#playerDestroy
    */
   on(event: "playerDestroy", listener: (player: Player) => void): this;
+
+  /**
+   * Emitted when replayOnDc has an error during execution.
+   * @event Manager#replayError 
+   */
+   on(event: "resumeError", Listener: (player: Player, error: Error) => void): this;
 
   /**
    * Emitted when a player queue ends.
@@ -528,6 +540,8 @@ export interface ManagerOptions {
   clientId?: string;
   /** Value to use for the `Client-Name` header. */
   clientName?: string;
+  /** Auto replay whenever the node disconnect */
+  resumeOnDc?: boolean;
   /** The shard count. */
   shards?: number;
   /** A array of plugins to use. */
