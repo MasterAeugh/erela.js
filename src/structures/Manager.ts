@@ -142,9 +142,9 @@ export interface Manager {
 
   /**
    * Emitted when replayOnDc has an error during execution.
-   * @event Manager#replayError 
+   * @event Manager#resumeError
    */
-   on(event: "resumeError", Listener: (player: Player, error: Error) => void): this;
+   on(event: "resumeError", listener: (player: Player, error: Error) => void): this;
 
   /**
    * Emitted when a player queue ends.
@@ -540,7 +540,7 @@ export interface ManagerOptions {
   clientId?: string;
   /** Value to use for the `Client-Name` header. */
   clientName?: string;
-  /** Auto replay whenever the node disconnect */
+  /** Auto resume whenever the node disconnect */
   resumeOnDc?: boolean;
   /** The shard count. */
   shards?: number;
